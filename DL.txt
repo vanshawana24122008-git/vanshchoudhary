@@ -1,0 +1,63 @@
+# STEP 1: Import core Deep Learning libraries
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from sklearn.model_selection import train_test_split
+
+# STEP 2: Create a simple, readable dataset of space objects
+# Features: Redshift (speed/distance), Ultraviolet Light, Green Light, Red Light
+# Labels: 0 = Star, 1 = Galaxy, 2 = Quasar
+data = {
+    'Redshift': [0.0001, 0.0003, 0.1500, 0.2200, 0.8500, 1.2000],
+    'Light_UV': [18.5, 19.2, 15.4, 16.1, 21.2, 22.5],
+    'Light_Green': [17.2, 18.0, 14.2, 15.0, 20.1, 21.3],
+    'Light_Red': [16.8, 17.4, 13.9, 14.5, 19.5, 20.4],
+    'Object_Class': [0, 0, 1, 1, 2, 2] # 0:Star, 1:Galaxy, 2:Quasar
+}
+
+df = pd.DataFrame(data)
+
+print("--- Automated Space Telescope Dataset ---")
+print(df)
+print("\n-------------------------------------------")
+
+# STEP 3: Separate Inputs (X) from Target Labels (y)
+X = df[['Redshift', 'Light_UV', 'Light_Green', 'Light_Red']].values
+y = df['Object_Class'].values
+
+# Convert target labels to categorical one-hot vectors for multiclass neural net
+y_encoded = tf.keras.utils.to_categorical(y, num_classes=3)
+
+# STEP 4: Build the Deep Learning Neural Network Architecture
+model = Sequential([
+    Dense(16, input_shape=(4,), activation='relu'), # Input Layer: accepts 4 space metrics
+    Dense(8, activation='relu'),                    # Hidden Layer: maps data patterns
+    Dense(3, activation='softmax')                  # Output Layer: probabilities for 3 space objects
+])
+
+# STEP 5: Compile the Neural Network
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# STEP 6: Train the Space Object Model Brain
+print("--- Training the Space Classifier Neural Network ---")
+model.fit(X, y_encoded, epochs=50, verbose=0)
+print("[Success] Model has successfully learned cosmic spectral patterns!\n")
+
+# STEP 7: Practical Field Inference Testing
+# Let's test a completely new unidentified cosmic object discovered by a telescope
+# Specs: Redshift = 0.18, UV = 15.8, Green = 14.5, Red = 14.1
+new_cosmic_object = np.array([[0.18, 15.8, 14.5, 14.1]])
+
+# Make the prediction
+prediction = model.predict(new_cosmic_object, verbose=0)
+predicted_class = np.argmax(prediction)
+
+# Define our labels map
+labels = {0: "⭐ STAR", 1: "🌌 GALAXY", 2: "💫 QUASAR"}
+
+print("--- Production Inference Evaluation ---")
+print(f"🧠 Neural Network Classification Result: {labels[predicted_class]}")
